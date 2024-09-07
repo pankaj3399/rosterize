@@ -15,7 +15,7 @@ Make sure the following are installed in the local system
 Before running the backend and frontend make sure to add the .env files variables in both the projects. <br/>
 For the frontend define: 
 ```
-.VITE_REACT_APP_API_URL=<<BACKEND URL>>
+VITE_REACT_APP_API_URL=<<BACKEND URL>>
 ```
 For the backend define: 
 
