@@ -15,7 +15,7 @@ Make sure the following are installed in the local system
 Before running the backend and frontend make sure to add the .env files variables in both the projects. <br/>
 For the frontend define: 
 ```
-VITE_GRAPHQL_API_URL=<<BACKEND URL>>
+.VITE_REACT_APP_API_URL=<<BACKEND URL>>
 ```
 For the backend define: 
 
@@ -144,7 +144,7 @@ The user is required to:
 6. Click on deploy and the backend should be deployed.
 7. Once the deployment is complete, you will receive a URL for the backend. For example: ![image](https://github.com/user-attachments/assets/ec79ab9a-3867-4b09-85d7-48797117d61d)
 8. Copy the URL and keep it with you for further steps.
-9. Repeat the same process again, but this time for the frontend and in the folder selection instead of selecting server, select client. Add the env variables and in your **VITE_GRAPHQL_API_URL** paste the backend url that you received after deploying the backend to vercel.
+9. Repeat the same process again, but this time for the frontend and in the folder selection instead of selecting server, select client. Add the env variables and in your **VITE_REACT_APP_API_URL** paste the backend url that you received after deploying the backend to vercel.
 10. Click on deploy.
 11. After deployment is done you'll receive a URL, this will be your frontend URL from where you can access the web application.
 12. Once you receive the frontend URL, go the previous deployement of the backend server. Select Settings: ![image](https://github.com/user-attachments/assets/7b197313-c081-4450-b1c6-becd0b659c0b)
