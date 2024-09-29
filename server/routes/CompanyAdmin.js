@@ -1,8 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const { updateCompany } = require('../controllers/Company');
+const {
+  updateCompany,
+  DepartmentHeadList,
+  HeadList,
+} = require("../controllers/Company");
 
-router.put('/:company_id', updateCompany);
+router.put("/:company_id", updateCompany);
+router.get("/:company_id/:department_id", DepartmentHeadList);
+router.get("/:company_id", HeadList);
 
 module.exports = router;
