@@ -1,18 +1,17 @@
-import React from 'react';
+import React from "react";
 
-import {useQuery} from '@tanstack/react-query';
-import { Dashboard } from '../../api/User';
-import Loader from '../../Components/Loader/Loader.jsx'
+import { useQuery } from "@tanstack/react-query";
+import { Dashboard } from "../../api/User";
+import Loader from "../../Components/Loader/Loader.jsx";
 
 const UserDashboard = () => {
-
-  const {data, isLoading, error} = useQuery({
-    queryKey: 'hodDashboard',
+  const { data, isLoading, error } = useQuery({
+    queryKey: "hodDashboard",
     queryFn: async () => Dashboard(),
   });
 
   if (isLoading) return <Loader />;
-  if (error) return <div>Error</div>
+  if (error) return <div>Error</div>;
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md">
@@ -34,9 +33,8 @@ const UserDashboard = () => {
         <div className="p-4 bg-gray-100">
           <div className="text-lg font-semibold mb-2">Online</div>
           <div className="space-y-2">
-          <div className="relative inline-block">
-            {
-              data.statusOnline.map((status, index) => (
+            <div className="relative inline-block">
+              {data?.statusOnline?.map((status, index) => (
                 <div key={index} className="group relative inline-block">
                   <button className="px-4 py-2 m-2 bg-blue-500 text-white rounded-md">
                     {`${status?.user?.firstName} ${status?.user?.lastName}`}
@@ -46,9 +44,8 @@ const UserDashboard = () => {
                     {status?.message}
                   </div>
                 </div>
-              ))
-            }
-          </div>
+              ))}
+            </div>
 
             {/* <button className="px-4 py-2 m-2 bg-blue-500 text-white rounded-md">UserA</button>
             <button className="px-4 py-2 m-2 bg-blue-500 text-white rounded-md">UserB</button>
@@ -59,23 +56,27 @@ const UserDashboard = () => {
         <div className="p-4 bg-gray-100">
           <div className="text-lg font-semibold mb-2 text-red-500">Offline</div>
           <div className="space-y-2">
-            {
-              data.statusOffline.map((status, index) => (
-                <button key={index} className="px-4 py-2 m-2 bg-red-500 text-white rounded-md">{`${status?.firstName} ${status?.lastName}`}</button>
-              ))
-            }
+            {data?.statusOffline?.map((status, index) => (
+              <button
+                key={index}
+                className="px-4 py-2 m-2 bg-red-500 text-white rounded-md"
+              >{`${status?.firstName} ${status?.lastName}`}</button>
+            ))}
             {/* <button className="px-4 py-2 m-2 bg-red-500 text-white rounded-md">UserD</button>
             <button className="px-4 py-2 m-2 bg-red-500 text-white rounded-md">UserD</button> */}
           </div>
         </div>
         <div className="p-4 bg-gray-100">
-          <div className="text-lg font-semibold mb-2 text-blue-500">Medical Leaves</div>
+          <div className="text-lg font-semibold mb-2 text-blue-500">
+            Medical Leaves
+          </div>
           <div className="space-y-2">
-            {
-              data.leaveUsers.map((leave, index) => (
-                <button key={index} className="px-4 py-2 m-2 bg-teal-500 text-white rounded-md">{`${leave?.user?.firstName} ${leave?.user?.lastName}`}</button>
-              ))
-            }
+            {data?.leaveUsers?.map((leave, index) => (
+              <button
+                key={index}
+                className="px-4 py-2 m-2 bg-teal-500 text-white rounded-md"
+              >{`${leave?.user?.firstName} ${leave?.user?.lastName}`}</button>
+            ))}
             {/* <button className="px-4 py-2 m-2 bg-teal-500 text-white rounded-md">Chao</button>
             <button className="px-4 py-2 m-2 bg-teal-500 text-white rounded-md">Keng</button>
             <button className="px-4 py-2 m-2 bg-teal-500 text-white rounded-md">Jess</button>
@@ -83,7 +84,6 @@ const UserDashboard = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
