@@ -91,3 +91,18 @@ export const listDepartmentHeadProjects = async (departmentHead_id) => {
     );
   }
 };
+
+export const listCompanyHeadProjects = async (company_id) => {
+  try {
+    const response = await axios.get(`/departmenthead/listComapanyProjects`, {
+      params: { company_id },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message ||
+        error.message ||
+        "Failed to list projects"
+    );
+  }
+};

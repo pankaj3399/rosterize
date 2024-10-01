@@ -75,7 +75,7 @@ const ProjectManagement = () => {
     },
     onError: (error) => {
       setMessage("");
-      setError(error.message);
+      setError(error);
       console.error("Delete project failed:", error);
     },
   });
@@ -90,6 +90,7 @@ const ProjectManagement = () => {
     employee: "",
     startTime: "",
     endTime: "",
+    img: "",
   });
 
   const {
@@ -111,7 +112,8 @@ const ProjectManagement = () => {
       !newProject.primarySkill ||
       !newProject.employee ||
       !newProject.startTime ||
-      !newProject.endTime
+      !newProject.endTime ||
+      !newProject.img
     ) {
       return alert("Fields are required");
     }
@@ -126,7 +128,7 @@ const ProjectManagement = () => {
     if (startTime >= endTime) {
       return alert("Start time must be earlier than end time");
     }
-
+    console.log(newProject);
     createProjectMutation.mutate({ ...newProject, company: authData.company });
 
     setNewProject({
@@ -139,6 +141,7 @@ const ProjectManagement = () => {
       employee: "",
       startTime: "",
       endTime: "",
+      img: "",
     });
   };
 
@@ -234,19 +237,6 @@ const ProjectManagement = () => {
           </select>
 
           <label className="block text-sm font-medium mb-1 mt-4">
-            Start Time:
-          </label>
-          <input
-            className="border p-2 rounded w-full"
-            value={newProject.startTime}
-            onChange={(e) =>
-              setNewProject({ ...newProject, startTime: e.target.value })
-            }
-            required
-            type="datetime-local"
-          />
-
-          <label className="block text-sm font-medium mb-1 mt-4">
             No Of Employee Required: (Key in Number Only)
           </label>
           <input
@@ -257,6 +247,19 @@ const ProjectManagement = () => {
             }
             required
             type="number"
+          />
+
+          <label className="block text-sm font-medium mb-1 mt-4">
+            Start Time:
+          </label>
+          <input
+            className="border p-2 rounded w-full"
+            value={newProject.startTime}
+            onChange={(e) =>
+              setNewProject({ ...newProject, startTime: e.target.value })
+            }
+            required
+            type="datetime-local"
           />
         </div>
 
@@ -332,6 +335,16 @@ const ProjectManagement = () => {
               ))}
           </select>
 
+          <label className="block text-sm font-medium mb-1 mt-4">Image:</label>
+          <input
+            className="border p-2 rounded w-full"
+            value={newProject.img}
+            onChange={(e) =>
+              setNewProject({ ...newProject, img: e.target.value })
+            }
+            required
+          />
+
           <label className="block text-sm font-medium mb-1 mt-4">
             End Time:
           </label>
@@ -380,35 +393,50 @@ const ProjectManagement = () => {
               key={project._id}
               className="flex justify-between items-center border p-2 rounded mb-2"
             >
-              <div>
-                <p className="text-sm">
-                  <strong>Project Name:</strong> {project.projectName}
-                </p>
-                <p className="text-sm">
-                  <strong>PIC:</strong> {project?.departmentHead?.email}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 1:</strong> {project?.primarySkill?.name}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 2:</strong>{" "}
-                  {project?.secondarySkill?.name ?? "-"}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 3:</strong> {project?.thirdSkill?.name ?? "-"}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 4:</strong> {project?.fourthSkill?.name ?? "-"}
-                </p>
-                <p className="text-sm">
-                  <strong>No Of Employee:</strong> {project?.employee}
-                </p>
-                <p className="text-sm">
-                  <strong>Start Time:</strong> {project?.startTime}
-                </p>
-                <p className="text-sm">
-                  <strong>End Time:</strong> {project?.endTime}
-                </p>
+              <div className="flex gap-4">
+                {project.img && (
+                  <img
+                    src={project.img}
+                    alt={project.projectName}
+                    className="mt-2 rounded"
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
+                <div>
+                  <p className="text-sm">
+                    <strong>Project Name:</strong> {project.projectName}
+                  </p>
+                  <p className="text-sm">
+                    <strong>PIC:</strong> {project?.departmentHead?.email}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 1:</strong> {project?.primarySkill?.name}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 2:</strong>{" "}
+                    {project?.secondarySkill?.name ?? "-"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 3:</strong> {project?.thirdSkill?.name ?? "-"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 4:</strong>{" "}
+                    {project?.fourthSkill?.name ?? "-"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>No Of Employee:</strong> {project?.employee}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Start Time:</strong> {project?.startTime}
+                  </p>
+                  <p className="text-sm">
+                    <strong>End Time:</strong> {project?.endTime}
+                  </p>
+                </div>
               </div>
               {
                 <button

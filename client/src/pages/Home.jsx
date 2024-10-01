@@ -39,6 +39,7 @@ import ManagePrice from "./Admin/ManagePrice";
 import EmployeeProfile from "./Profile/EmployeeProfile";
 import HodDashboard from "./Dashboard/HodDashboard";
 import HodSchedule from "./Schedule/HodSchedule";
+import AdminSchedule from "./Schedule/AdminSchedule";
 import Notifications from "./Notifications";
 import Payslips from "./Payslips";
 import ManageCustomerEnquiries from "./Admin/ManageEnquiries";
@@ -106,7 +107,7 @@ const roleToRoute = {
     },
     {
       path: "/schedule",
-      component: <HodSchedule />,
+      component: <AdminSchedule />,
       name: "Schedule",
       icon: <Calendar />,
     },

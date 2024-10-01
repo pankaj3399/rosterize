@@ -102,35 +102,50 @@ const Project = () => {
               key={project._id}
               className="flex justify-between items-center border p-2 rounded mb-2"
             >
-              <div>
-                <p className="text-sm">
-                  <strong>Project Name:</strong> {project.projectName}
-                </p>
-                <p className="text-sm">
-                  <strong>PIC:</strong> {project?.departmentHead?.email}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 1:</strong> {project?.primarySkill?.name}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 2:</strong>{" "}
-                  {project?.secondarySkill?.name ?? "-"}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 3:</strong> {project?.thirdSkill?.name ?? "-"}
-                </p>
-                <p className="text-sm">
-                  <strong>Skill 4:</strong> {project?.fourthSkill?.name ?? "-"}
-                </p>
-                <p className="text-sm">
-                  <strong>No Of Employee:</strong> {project?.employee}
-                </p>
-                <p className="text-sm">
-                  <strong>Start Time:</strong> {project?.startTime}
-                </p>
-                <p className="text-sm">
-                  <strong>End Time:</strong> {project?.endTime}
-                </p>
+              <div className="flex gap-4">
+                {project.img && (
+                  <img
+                    src={project.img}
+                    alt={project.projectName}
+                    className="mt-2 rounded"
+                    style={{
+                      width: "150px",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  />
+                )}
+                <div>
+                  <p className="text-sm">
+                    <strong>Project Name:</strong> {project.projectName}
+                  </p>
+                  <p className="text-sm">
+                    <strong>PIC:</strong> {project?.departmentHead?.email}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 1:</strong> {project?.primarySkill?.name}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 2:</strong>{" "}
+                    {project?.secondarySkill?.name ?? "-"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 3:</strong> {project?.thirdSkill?.name ?? "-"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Skill 4:</strong>{" "}
+                    {project?.fourthSkill?.name ?? "-"}
+                  </p>
+                  <p className="text-sm">
+                    <strong>No Of Employee:</strong> {project?.employee}
+                  </p>
+                  <p className="text-sm">
+                    <strong>Start Time:</strong> {project?.startTime}
+                  </p>
+                  <p className="text-sm">
+                    <strong>End Time:</strong> {project?.endTime}
+                  </p>
+                </div>
               </div>
               {
                 <button

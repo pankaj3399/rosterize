@@ -5,8 +5,9 @@ export const createProject = async (project) => {
     const response = await axios.post("/project/create", project);
     return response.data;
   } catch (error) {
+    console.log(error);
     throw new Error(
-      error?.response?.data?.error ||
+      error?.response?.data?.message ||
         error.message ||
         "Failed to create project"
     );

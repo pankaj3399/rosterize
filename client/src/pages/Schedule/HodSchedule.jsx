@@ -82,7 +82,7 @@ const ScheduleComponent = () => {
     error: errorProjects,
   } = useQuery({
     queryKey: ["projets"],
-    queryFn: () => listDepartmentHeadProjects(authData._id),
+    queryFn: () => listDepartmentHeadProjects(authData.company),
     enabled: !!authData.company,
     retry: 0,
   });

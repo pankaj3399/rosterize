@@ -86,7 +86,7 @@ const ManageCustomerEnquiries = () => {
           enquiries.length > 0 &&
           enquiries.map(
             (enquiry) =>
-              enquiry.status === "completed" && (
+              enquiry.status !== "completed" && (
                 <div key={enquiry._id} className="border p-4 rounded-lg">
                   <div className="flex">
                     <div className="w-full">
