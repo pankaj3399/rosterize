@@ -254,12 +254,22 @@ module.exports = {
   listUnderHOD: async (req, res) => {
     try {
       const { email } = req.query;
-      const findCondition = {
-        departmentHead: req.user._id,
-        company: req.company._id,
-        status: "active",
-        role: { $in: ["departmenthead", "user"] },
-      };
+      let findCondition = {};
+
+      if (req.user.role !== "companyadmin") {
+        findCondition = {
+          departmentHead: req.user._id,
+          company: req.company._id,
+          status: "active",
+          role: { $in: ["departmenthead", "user"] },
+        };
+      } else {
+        findCondition = {
+          company: req.company._id,
+          status: "active",
+          role: { $in: ["user"] },
+        };
+      }
 
       if (req.user.role === "departmenthead" || req.user.role === "user") {
         findCondition.department = req.user.department;
@@ -387,7 +397,7 @@ module.exports = {
       const { from, to } = req.query;
       const clockin = await ClockInOut.find({
         user: req.user.id,
-        createdAt: { $gte: from, $lte: to },
+        clockIn: { $gte: from, $lte: to },
       });
 
       if (clockin) {
@@ -579,7 +589,7 @@ module.exports = {
       const user_id = req.user._id;
 
       const company_id = req.user.company;
-      const user = await User.findOne({ _id: user_id })
+      const user = await User.findById({ _id: user_id })
         .populate("companyRole")
         .populate("department");
       if (!user) {

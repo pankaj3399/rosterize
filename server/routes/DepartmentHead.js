@@ -9,9 +9,11 @@ const {
   downloadSchedule,
   listProject,
   removeProject,
+  listCompanyProject,
 } = require("../controllers/DepartmentHead");
 
 router.get("/listDepartmentHeadProjects", listProject);
+router.get("/listComapanyProjects", listCompanyProject);
 router.delete("/removeDepartmentHeadProjects/:project_id", removeProject);
 router.get("/leaves", getLeaves);
 router.post("/leave/status/:id", changeLeaveStatus);

@@ -39,6 +39,10 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a end time for this project."],
   },
+  img: {
+    type: String,
+    required: [true, "Please provide an image for this project."],
+  },
   createdAt: {
     type: Date,
     default: Date.now,

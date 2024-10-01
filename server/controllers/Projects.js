@@ -16,6 +16,7 @@ module.exports = {
         employee,
         startTime,
         endTime,
+        img,
       } = req.body;
 
       const project = new Project({
@@ -28,14 +29,30 @@ module.exports = {
         employee,
         startTime,
         endTime,
+        img,
       });
-      await project.save();
 
       const availableUsers = await User.find({
         primarySkill: primarySkill,
         role: "user",
         $or: [{ project: null }, { project: { $exists: false } }],
       }).limit(employee);
+
+      // Notify if no employees are available for the project
+      if (availableUsers.length === 0) {
+        // Create a notification about no available employees
+        const noEmployeeNotification = new Notification({
+          user: departmentHead,
+          message: `No employees with the required primary skill (${primarySkill}) are available for the project: ${projectName}`,
+          company: departmentHead, // Assuming departmentHead represents the company or person to notify
+        });
+        await noEmployeeNotification.save();
+        await project.save();
+
+        return res.status(404).json({
+          message: `No employees with the primary skill are available for the project: ${projectName}`,
+        });
+      }
 
       if (availableUsers.length < employee) {
         return res.status(404).json({
@@ -59,41 +76,49 @@ module.exports = {
         const startClockInTime = new Date(startTime);
         const endClockOutTime = new Date(endTime);
 
-        const currentDate = new Date(startDate);
+        let currentDate = new Date(startDate);
+
         while (currentDate <= endDate) {
-          const clockIn = new Date(currentDate);
-          clockIn.setHours(startClockInTime.getUTCHours());
-          clockIn.setMinutes(startClockInTime.getUTCMinutes());
-          clockIn.setSeconds(0);
+          // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+          const dayOfWeek = currentDate.getUTCDay();
 
-          const clockOut = new Date(currentDate);
-          clockOut.setHours(endClockOutTime.getUTCHours());
-          clockOut.setMinutes(endClockOutTime.getUTCMinutes());
-          clockOut.setSeconds(0);
+          // Only process weekdays (Monday to Friday)
+          if (dayOfWeek !== 6 && dayOfWeek !== 0) {
+            const clockIn = new Date(currentDate);
+            clockIn.setUTCHours(startClockInTime.getUTCHours());
+            clockIn.setUTCMinutes(startClockInTime.getUTCMinutes());
+            clockIn.setUTCSeconds(0);
 
-          const existingClockInOut = await ClockInOut.findOne({
-            user: user._id,
-            createdAt: { $gte: currentDate },
-            assigned: true,
-          });
+            const clockOut = new Date(currentDate);
+            clockOut.setUTCHours(endClockOutTime.getUTCHours());
+            clockOut.setUTCMinutes(endClockOutTime.getUTCMinutes());
+            clockOut.setUTCSeconds(0);
 
-          if (existingClockInOut) {
-            existingClockInOut.clockIn = clockIn;
-            existingClockInOut.clockOut = clockOut;
-            existingClockInOut.project = project._id;
-            await existingClockInOut.save();
-          } else {
-            const newClockInOut = new ClockInOut({
+            const existingClockInOut = await ClockInOut.findOne({
               user: user._id,
-              company: user.company,
-              clockIn: clockIn,
-              clockOut: clockOut,
-              project: project._id,
+              createdAt: { $gte: currentDate },
               assigned: true,
             });
-            await newClockInOut.save();
+
+            if (existingClockInOut) {
+              existingClockInOut.clockIn = clockIn;
+              existingClockInOut.clockOut = clockOut;
+              existingClockInOut.project = project._id;
+              await existingClockInOut.save();
+            } else {
+              const newClockInOut = new ClockInOut({
+                user: user._id,
+                company: user.company,
+                clockIn: clockIn,
+                clockOut: clockOut,
+                project: project._id,
+                assigned: true,
+              });
+              await newClockInOut.save();
+            }
           }
 
+          // Move to the next day
           currentDate.setDate(currentDate.getDate() + 1);
         }
       });

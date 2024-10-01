@@ -1,6 +1,6 @@
 # Setting up the project locally
 
-The projects consists of two directories 
+The projects consists of two directories
 **Client and Server**. <br/>
 
 ## Prerequisites <br/>
@@ -13,28 +13,29 @@ Make sure the following are installed in the local system
 ## Running the project locally
 
 Before running the backend and frontend make sure to add the .env files variables in both the projects. <br/>
-For the frontend define: 
+For the frontend define:
+
 ```
 VITE_REACT_APP_API_URL=<<BACKEND URL>>
 ```
-For the backend define: 
+
+For the backend define:
 
 ```
 # this is only for local, replace with your actual mongoDB url once created
-MONGO_URI=mongodb://127.0.0.1:27017/rosterize  
+MONGO_URI=mongodb://127.0.0.1:27017/rosterize
 PORT=5000
 
 # example, create a secure token once deploying to production
 TOKEN_SECRET=secret
 
 # provide your own email that you want to use for the admin
-ADMIN_EMAIL=admin@gmail.com  
+ADMIN_EMAIL=admin@gmail.com
 ADMIN_PASSWORD=admin
-FRONTEND_URL= < Frontend URL >
 
 # the below two have been discussed later in a seperate section
 PASSWORD_RESET_SENDER_EMAIL = < sender mail address >
-PASSWORD_RESET_SENDER_PASSWORD = < password for the mail address > 
+PASSWORD_RESET_SENDER_PASSWORD = < password for the mail address >
 ```
 
 ### Starting the Frontend
@@ -53,6 +54,7 @@ npm i
 node seed.js
 node index.js
 ```
+
 ## Creating a GitHub Account and Pushing the Project to GitHub
 
 ### Step 1: Create a GitHub Account
@@ -75,27 +77,37 @@ git config --global user.name "Your Name"
 git config --global user.email "your-email@example.com"
 ```
 
-### Step 3: 
+### Step 3:
+
 1. Open the terminal in the root directory of your project.
 2. Initialize the Git repository:
+
 ```
 git init
 ```
+
 3. Add all files to the repository:
+
 ```
 git add .
 ```
+
 4. Commit the changes:
+
 ```
 git commit -m "Initial commit"
 ```
+
 5. Go to GitHub, click on the + icon in the top-right corner, and select New Repository.
 6. Name your repository and click Create Repository.
 7. After creating the repository, GitHub will give you a URL for your repo. Add this URL to your local repository as the remote origin:
+
 ```
 git remote add origin https://github.com/your-username/your-repo-name.git
 ```
+
 8. Push the code to GitHub:
+
 ```
 git push -u origin master
 ```
@@ -103,7 +115,7 @@ git push -u origin master
 # Setup for GMail account to send mails for the forgot-password functionality
 
 1. Please refer to this video to setup the forgot-password functionality -[Setup Sending Mails](https://youtu.be/klDTBiW6iiM?si=7t4HCOxwdLwb0vd9&t=22)
-2. Once the password has been created using the above method, replace the ENV variables PASSWORD_RESET_SENDER_EMAIL and PASSWORD_RESET_SENDER_PASSWORD with your email and the password created in step 1. 
+2. Once the password has been created using the above method, replace the ENV variables PASSWORD_RESET_SENDER_EMAIL and PASSWORD_RESET_SENDER_PASSWORD with your email and the password created in step 1.
 
 ## Creating a MongoDB Collection
 
@@ -128,14 +140,15 @@ git push -u origin master
 
 Example `.env`:
 MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/mydatabase?retryWrites=true&w=majority
-The above is only an example string, the actual string will be provided on the mongo DB website. 
+The above is only an example string, the actual string will be provided on the mongo DB website.
 
-### Step 4. Add the MONGO_URI in the environment variables. 
+### Step 4. Add the MONGO_URI in the environment variables.
 
 # Deploying the project to vercel
 
 The project has already been included with the required vercel.json files. <br/>
 The user is required to:
+
 1. push the code to their github/gitlab account.
 2. Create a vercel account and connect the github/gitlab account with it.
 3. Go the Add new button on the dashboard and select project.![image](https://github.com/user-attachments/assets/1d4d2126-bdea-45a7-a1ff-ea6e626e45cf)
@@ -152,12 +165,4 @@ The user is required to:
 14. Add this new Key as FRONTEND_URL and paste the URL received after the frontend deployement.
 15. Go to the deployments section, select the latest deployment options and click on the redeploy option. <br/> ![image](https://github.com/user-attachments/assets/38fc1395-796e-450f-b3cf-4f054e490ec8)
 16. Finally click on redeploy.<br/> ![image](https://github.com/user-attachments/assets/60bc898b-f13e-4f41-b0db-47c2f5572759)
-17. After all the process are done, goto to the local setup of the project and replace your MONGO_URI, ADMIN_EMAIL and ADMIN_PASSWORD with your with the newly created Mongo DB url and actual email and password for the admin user. Once done, in the terminal, go the working directory of the project and run ``` node seed.js```. This will create the admin user in the production 
-
-
-
-    
-
-
-
-
+17. After all the process are done, goto to the local setup of the project and replace your MONGO_URI, ADMIN_EMAIL and ADMIN_PASSWORD with your with the newly created Mongo DB url and actual email and password for the admin user. Once done, in the terminal, go the working directory of the project and run ` node seed.js`. This will create the admin user in the production

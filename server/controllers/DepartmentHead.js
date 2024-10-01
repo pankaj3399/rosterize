@@ -226,22 +226,31 @@ module.exports = {
         if (!sheetNames.includes(sheetName)) {
           const worksheet = workbook.addWorksheet(sheetName);
           worksheet.columns = [
-            { header: "Date", key: "date", width: 10 },
+            { header: "Date", key: "date", width: 15 },
             { header: "Clock In", key: "clockIn", width: 20 },
             { header: "Clock Out", key: "clockOut", width: 20 },
           ];
           sheetNames.push(sheetName);
         }
         const worksheet = workbook.getWorksheet(sheetName);
-        // get the time and date separately and add three columns as date, clock in time and clock out time
-        const date = new Date(clockIn);
-        const clockInTime = date.toLocaleTimeString();
-        date.setTime(clockOut);
-        const clockOutTime = date.toLocaleTimeString();
+
+        // Convert clockIn and clockOut to appropriate date and time formats
+        const clockInDate = new Date(clockIn);
+        const clockOutDate = new Date(clockOut);
+
+        const formattedDate = `${clockInDate.getUTCDate()}/${
+          clockInDate.getUTCMonth() + 1
+        }/${clockInDate.getUTCFullYear()}`;
+
+        // Format as hh:mm:ss (UTC)
+        const formattedClockInTime = clockInDate.toISOString().slice(11, 19);
+        const formattedClockOutTime = clockOutDate.toISOString().slice(11, 19);
+
+        // Add a row with formatted date, clockIn, and clockOut
         worksheet.addRow({
-          date: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`,
-          clockIn: clockInTime,
-          clockOut: clockOutTime,
+          date: formattedDate,
+          clockIn: formattedClockInTime,
+          clockOut: formattedClockOutTime,
         });
       }
 
@@ -303,6 +312,48 @@ module.exports = {
       await ClockInOut.deleteMany({ project: project_id });
 
       res.status(200).json({ message: "Project removed successfully" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  },
+  listCompanyProject: async (req, res) => {
+    try {
+      const { company_id, projectName } = req.query;
+      console.log(company_id);
+      const departmentHeads = await User.find({
+        company: company_id,
+        role: "departmenthead",
+      });
+
+      if (departmentHeads.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No department heads found for this company." });
+      }
+
+      // Extract department head IDs
+      const departmentHeadIds = departmentHeads.map((head) => head._id);
+
+      // Step 2: Build the project query conditions
+      const findCondition = {
+        departmentHead: { $in: departmentHeadIds },
+      };
+
+      if (projectName && projectName !== "") {
+        findCondition.projectName = {
+          $regex: new RegExp(projectName, "i"), // Case-insensitive regex search
+        };
+      }
+
+      // Step 3: Find projects associated with the department heads
+      const projects = await Project.find(findCondition)
+        .populate("primarySkill")
+        .populate("secondarySkill")
+        .populate("thirdSkill")
+        .populate("fourthSkill")
+        .populate("departmentHead");
+
+      res.json(projects);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
