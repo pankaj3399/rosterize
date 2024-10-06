@@ -1,18 +1,21 @@
 import axios from "../utils/axiosConfig";
 
-export const listSkills = async () => {
+export const listSkills = async (company) => {
   try {
-    const response = await axios.get(`/skill/list`);
+    const response = await axios.get(`/skill/list`, {
+      params: { company: company },
+    });
     return response.data;
   } catch (error) {
     throw new Error(error.message || "Failed to fetch roles");
   }
 };
 
-export const createSkill = async ({ name }) => {
+export const createSkill = async ({ name, company }) => {
   try {
     const response = await axios.post("/skill/create", {
       name,
+      company,
     });
     return response.data;
   } catch (error) {

@@ -12,7 +12,7 @@ const SkillsManagement = () => {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["skills"],
-    queryFn: () => listSkills(),
+    queryFn: () => listSkills(authData.company),
     enabled: !!authData.company,
     retry: 0,
   });
@@ -46,7 +46,7 @@ const SkillsManagement = () => {
       if (skillExists) {
         setErrorMessage("Skill already exists!");
       } else {
-        addSkillMutation.mutate({ name: newSkill });
+        addSkillMutation.mutate({ name: newSkill, company: authData.company });
         setErrorMessage("");
         setNewSkill("");
       }

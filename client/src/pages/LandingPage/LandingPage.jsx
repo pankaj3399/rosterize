@@ -4,18 +4,18 @@ import { Link } from "react-router-dom";
 
 function LandingPage() {
   return (
-    <div className="min-h-screen px-[120px]">
+    <div className="min-h-screen px-[120px]  bg-[#00221c]">
       <header className="flex justify-between items-center py-6">
         <div className="text-white bg-[#0E2442] py-4 px-[36px]">
           <h1 className="text-xl">LOGO</h1>
         </div>
       </header>
-      <div className="grid grid-cols-2 my-[120px]">
-        <div>
+      <div className="flex my-[30px] gap-4 flex-col-reverse xl:flex-row">
+        <div className="flex-1">
           <div className="text-center lg:text-left">
-            <div className="text-black">
+            <div className="text-white">
               <h3 className="text-[54px] font-medium">About Us:</h3>
-              <p className="mt-4 sm:text-[18px] text-[#00221C]">
+              <p className="mt-4 sm:text-[18px] text-white">
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -23,10 +23,10 @@ function LandingPage() {
                 in reprehen"
               </p>
             </div>
-            <h2 className="text-[54px] font-medium text-black">
+            <h2 className="text-[54px] font-medium text-white">
               Rosterize App
             </h2>
-            <p className="mt-4 text-[16px] text-[#00221C] text-justify">
+            <p className="mt-4 text-[16px] text-white text-justify">
               "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
               enim ad minim veniam, quis nostrud exercitation ullamco laboris
@@ -61,13 +61,9 @@ function LandingPage() {
             </div>
           </div>
         </div>
-        <div className="flex justify-center items-center">
+        <div className="flex flex-1 justify-center items-center">
           <div className="mt-[-90px]">
-            <img
-              src={img}
-              className="object-cover h-auto min-w-[650px]"
-              alt=""
-            />
+            <img src={img} className="object-cover h-auto " alt="" />
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import {
   addSchedule,
   downloadSchedule,
   listDepartmentHeadProjects,
+  getAllUserLeaves,
 } from "../../api/Hod";
 import { listUnderHOD } from "../../api/User";
 import { useAuth } from "../../context/AuthContext";
@@ -64,7 +65,7 @@ const ScheduleComponent = () => {
     isError,
   } = useQuery({
     queryKey: ["schedule", { from, to }],
-    queryFn: () => getSchedule({ from, to }),
+    queryFn: () => getSchedule({ from, to, status: "approved" }),
   });
 
   const {
@@ -76,13 +77,26 @@ const ScheduleComponent = () => {
     queryFn: listUnderHOD,
   });
 
+  const departmentHeadId = authData._id;
+
+  const {
+    data: leaves = [],
+    isLoading: leavesLoading,
+    isError: leavesError,
+  } = useQuery({
+    queryKey: ["leaves", { from, to, departmentHeadId, status: "approved" }],
+    queryFn: () =>
+      getAllUserLeaves({ from, to, departmentHeadId, status: "approved" }),
+  });
+
+  console.log(leaves);
   const {
     data: projectsData,
     isLoading: loadingProjects,
     error: errorProjects,
   } = useQuery({
     queryKey: ["projets"],
-    queryFn: () => listDepartmentHeadProjects(authData.company),
+    queryFn: () => listDepartmentHeadProjects(authData._id),
     enabled: !!authData.company,
     retry: 0,
   });
@@ -128,6 +142,38 @@ const ScheduleComponent = () => {
       )}`;
     }
     return "OFF";
+  };
+
+  const getScheduleProjectForDay = (userId, date) => {
+    const schedule = schedules.find(
+      (s) =>
+        s.user._id === userId &&
+        format(new Date(s.clockIn), "yyyy-MM-dd") === date
+    );
+
+    if (schedule) {
+      return `${schedule?.project?.projectName}`;
+    }
+    return "";
+  };
+
+  const getLeaveForDay = (userId, date) => {
+    if (Array.isArray(leaves)) {
+      const leave = leaves.find(
+        (l) =>
+          l.user._id === userId &&
+          format(new Date(l.startDate), "yyyy-MM-dd") === date
+      );
+
+      if (leave) {
+        if (leave.leaveType === "medical") {
+          return "ML";
+        } else if (leave.leaveType === "annual") {
+          return "AL";
+        }
+      }
+    }
+    return ""; // Return empty string if no leave found
   };
 
   const handleCellClick = (userId, date, project_id) => {
@@ -256,26 +302,36 @@ const ScheduleComponent = () => {
                   {user.email}
                 </span>
               </div>
-              {currentWeek.map((date, idx) => (
-                <div
-                  key={idx}
-                  className={`p-2 border rounded-md cursor-pointer ${
-                    getScheduleForDay(user._id, date) === "OFF"
-                      ? "text-red-500 border-red-500"
-                      : "text-gray-800 border-gray-300"
-                  }`}
-                  onClick={() =>
-                    handleCellClick(user._id, date, user?.project?._id)
-                  }
-                >
-                  {getScheduleForDay(user._id, date) !== "OFF" && (
-                    <div className=" text-xs text-gray-600">
-                      {user?.project?.projectName}
-                    </div>
-                  )}
-                  {getScheduleForDay(user._id, date)}
-                </div>
-              ))}
+              {currentWeek.map((date, idx) => {
+                const leaveStatus = getLeaveForDay(user._id, date);
+                const scheduleStatus = getScheduleForDay(user._id, date); // Get schedule status
+                const isOnLeave = leaveStatus === "ML" || leaveStatus === "AL"; // Adjust condition for leave
+                return (
+                  <div
+                    key={idx}
+                    className={`p-2 border rounded-md cursor-pointer ${
+                      isOnLeave
+                        ? "border-blue-500 text-blue-500"
+                        : scheduleStatus === "OFF"
+                        ? "text-red-500 border-red-500"
+                        : "text-gray-800 border-gray-300"
+                    }`}
+                    onClick={() =>
+                      !isOnLeave &&
+                      handleCellClick(user._id, date, user?.project?._id)
+                    }
+                  >
+                    {isOnLeave
+                      ? leaveStatus
+                      : scheduleStatus !== "OFF" && (
+                          <div className="text-xs text-gray-600">
+                            {getScheduleProjectForDay(user._id, date)}
+                          </div>
+                        )}
+                    {isOnLeave ? "" : scheduleStatus}
+                  </div>
+                );
+              })}
             </React.Fragment>
           ))}
         </div>

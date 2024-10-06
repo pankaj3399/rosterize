@@ -26,8 +26,8 @@ const ProjectManagement = () => {
     isLoading: loadingSkills,
     error: errorSkills,
   } = useQuery({
-    queryKey: ["skills"],
-    queryFn: () => listSkills(),
+    queryKey: ["skills", authData.company],
+    queryFn: () => listSkills(authData.company),
     retry: 0,
   });
 
@@ -36,14 +36,15 @@ const ProjectManagement = () => {
     isLoading: loadingUsers,
     error: errorUsers,
   } = useQuery({
-    queryKey: ["projects"],
+    queryKey: ["projects", authData.company],
     queryFn: () => listProjects(authData.company),
     enabled: !!authData.company,
     retry: 0,
   });
 
   const searchProjectMutation = useMutation({
-    mutationFn: searchProject,
+    mutationFn: ({ projectName }) =>
+      searchProject({ projectName, company: authData.company }),
     onSuccess: (data) => {
       setProjects(data);
     },
@@ -56,8 +57,13 @@ const ProjectManagement = () => {
     mutationFn: createProject,
     onSuccess: (data) => {
       queryClient.invalidateQueries("projects");
-      setMessage("Project added successfully");
-      setError("");
+      if (data.message.toString() === "Project created and assigned to user") {
+        setMessage(data.message);
+        setError("");
+      } else {
+        setError(data.message);
+        setMessage("");
+      }
     },
     onError: (error) => {
       setMessage("");
@@ -87,7 +93,7 @@ const ProjectManagement = () => {
     secondarySkill: "",
     thirdSkill: "",
     fourthSkill: "",
-    employee: "",
+    employee: 0,
     startTime: "",
     endTime: "",
     img: "",
@@ -129,7 +135,10 @@ const ProjectManagement = () => {
       return alert("Start time must be earlier than end time");
     }
     console.log(newProject);
-    createProjectMutation.mutate({ ...newProject, company: authData.company });
+    createProjectMutation.mutate({
+      ...newProject,
+      companyId: authData.company,
+    });
 
     setNewProject({
       projectName: "",
@@ -138,7 +147,7 @@ const ProjectManagement = () => {
       secondarySkill: "",
       thirdSkill: "",
       fourthSkill: "",
-      employee: "",
+      employee: 0,
       startTime: "",
       endTime: "",
       img: "",

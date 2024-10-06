@@ -14,9 +14,13 @@ export const createProject = async (project) => {
   }
 };
 
-export const listProjects = async () => {
+export const listProjects = async (company) => {
   try {
-    const response = await axios.get("/project/list");
+    const response = await axios.get("/project/list", {
+      params: {
+        company,
+      },
+    });
     return response.data;
   } catch (error) {
     throw new Error(
@@ -25,11 +29,12 @@ export const listProjects = async () => {
   }
 };
 
-export const searchProject = async ({ projectName }) => {
+export const searchProject = async ({ projectName, company }) => {
   try {
     const response = await axios.get(`/project/list`, {
       params: {
         projectName,
+        company,
       },
     });
     return response.data;

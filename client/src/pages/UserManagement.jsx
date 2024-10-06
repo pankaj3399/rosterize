@@ -33,8 +33,8 @@ const UserManagement = () => {
     isLoading: loadingSkills,
     error: errorSkills,
   } = useQuery({
-    queryKey: ["skills"],
-    queryFn: () => listSkills(),
+    queryKey: ["skills", authData.company],
+    queryFn: () => listSkills(authData.company),
     retry: 0,
   });
 
@@ -108,7 +108,6 @@ const UserManagement = () => {
     role: "",
     primarySkill: "",
     secondarySkill: "",
-    leaveEntitlement: "",
     departmentHead: "",
   });
 
@@ -134,8 +133,7 @@ const UserManagement = () => {
       !newUser.phoneNumber ||
       !newUser.role ||
       !newUser.primarySkill ||
-      !newUser.secondarySkill ||
-      !newUser.leaveEntitlement
+      !newUser.secondarySkill
     ) {
       return alert("All fields are required");
     }
@@ -151,7 +149,6 @@ const UserManagement = () => {
       companyRole: "",
       primarySkill: "",
       secondarySkill: "",
-      leaveEntitlement: "",
       departmentHead: "",
     });
   };
@@ -279,19 +276,6 @@ const UserManagement = () => {
               </select>
             </>
           )}
-
-          <label className="block text-sm font-medium mb-1 mt-4">
-            Leave Entitlement: (Key in Number Only)
-          </label>
-          <input
-            className="border p-2 rounded w-full"
-            value={newUser.leaveEntitlement}
-            onChange={(e) =>
-              setNewUser({ ...newUser, leaveEntitlement: e.target.value })
-            }
-            required
-            type="number"
-          />
         </div>
 
         <div>
@@ -443,9 +427,6 @@ const UserManagement = () => {
                 </p>
                 <p className="text-sm">
                   <strong>Secondary Skill:</strong> {user?.secondarySkill?.name}
-                </p>
-                <p className="text-sm">
-                  <strong>Leave Entitlement :</strong> {user?.leaveEntitlement}
                 </p>
               </div>
               {

@@ -1,33 +1,41 @@
-import React, {useState} from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { applyLeave } from '../api/User';
+import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { applyLeave } from "../api/User";
 
 const ApplyLeave = () => {
-
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const applyLeaveMutation = useMutation({
     mutationFn: applyLeave,
     onSuccess: () => {
-      setError('');
-      setMessage('Leave applied successfully');
+      document.getElementById("leaveType").value = "";
+      document.getElementById("fromDate").value = "";
+      document.getElementById("toDate").value = "";
+      document.getElementById("note").value = "";
+      setError("");
+      setMessage("Leave applied successfully");
     },
     onError: (error) => {
-      setMessage('');
+      setMessage("");
       setError(error.message);
-    }
+    },
   });
 
   const submitLeave = (e) => {
     e.preventDefault();
-    const leaveType = document.getElementById('leaveType').value;
-    const fromDate = document.getElementById('fromDate').value;
-    const toDate = document.getElementById('toDate').value;
-    const note = document.getElementById('note').value;
+    const leaveType = document.getElementById("leaveType").value;
+    const fromDate = document.getElementById("fromDate").value;
+    const toDate = document.getElementById("toDate").value;
+    const note = document.getElementById("note").value;
 
-    applyLeaveMutation.mutate({from: fromDate, to: toDate, reason: note, type: leaveType});
-  }
+    applyLeaveMutation.mutate({
+      from: fromDate,
+      to: toDate,
+      reason: note,
+      type: leaveType,
+    });
+  };
 
   return (
     <div className="p-8 bg-white shadow-md rounded-md">
@@ -35,7 +43,10 @@ const ApplyLeave = () => {
       <div className="bg-gray-100 p-6 rounded-md shadow">
         <form>
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="leaveType">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="leaveType"
+            >
               Leave Type:
             </label>
             <select
@@ -43,7 +54,9 @@ const ApplyLeave = () => {
               className="block w-full bg-white border border-gray-300 rounded-md p-2"
               required
             >
-              <option value="" disabled selected>Select</option>
+              <option value="" disabled selected>
+                Select
+              </option>
               <option value="medical">Medical Leave</option>
               <option value="annual">Annual Leave</option>
             </select>
@@ -51,7 +64,10 @@ const ApplyLeave = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="mb-4">
-              <label className="block text-gray-700 font-bold mb-2" htmlFor="fromDate">
+              <label
+                className="block text-gray-700 font-bold mb-2"
+                htmlFor="fromDate"
+              >
                 From:
               </label>
               <input
@@ -63,7 +79,10 @@ const ApplyLeave = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 font-bold mb-2" htmlFor="toDate">
+              <label
+                className="block text-gray-700 font-bold mb-2"
+                htmlFor="toDate"
+              >
                 To:
               </label>
               <input
@@ -76,7 +95,10 @@ const ApplyLeave = () => {
           </div>
 
           <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2" htmlFor="note">
+            <label
+              className="block text-gray-700 font-bold mb-2"
+              htmlFor="note"
+            >
               Note:
             </label>
             <textarea

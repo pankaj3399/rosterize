@@ -15,7 +15,7 @@ function AboutUs() {
   if (isLoading) return <Loader />;
 
   return (
-    <div className="min-h-screen sm:px-[120px] px-6 bg-[#00221c]">
+    <div className="min-h-screen sm:px-[120px] px-6">
       <header className="flex justify-between items-center py-6">
         <img src={companyLogo} width="60px" alt="Logo" />
       </header>
@@ -24,7 +24,7 @@ function AboutUs() {
           <img className="object-cover" src={img} alt="" />
         </div>
         <div className="grid-cols-1 w-full">
-          <div className="text-white mt-[30px]">
+          <div className="text-[#0E2442] mt-[30px]">
             <h3 className="text-[28px] font-bold">What we offer? Price plan</h3>
 
             <div className="flex flex-col">
@@ -42,7 +42,7 @@ function AboutUs() {
               ))}
             </div>
           </div>
-          <div className="text-white mt-[30px]">
+          <div className="text-[#0E2442] mt-[30px]">
             <h3 className="text-[28px] font-bold">Testimonials:</h3>
 
             {data.reviews.map((review) => (
@@ -58,7 +58,7 @@ function AboutUs() {
               </div>
             ))}
           </div>
-          <div className="sm:flex-row flex-col justify-center lg:justify-start mt-10 sm:space-x-4 space-y-4">
+          <div className="flex flex-wrap sm:flex-row flex-col justify-center lg:justify-start mt-10  gap-4">
             <Link to="/register" className="bg-[#0E2442] text-white py-2 px-9">
               Register
             </Link>

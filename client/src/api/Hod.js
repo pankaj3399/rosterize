@@ -106,3 +106,49 @@ export const listCompanyHeadProjects = async (company_id) => {
     );
   }
 };
+
+export const getAllUserLeaves = async ({
+  departmentHeadId,
+  from,
+  to,
+  status,
+}) => {
+  try {
+    const response = await axios.get(`/departmenthead/getleaves`, {
+      params: {
+        departmentHeadId,
+        from,
+        to,
+        status,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message || error.message || "Failed to get leaves"
+    );
+  }
+};
+
+export const getAllUserInCompanyLeaves = async ({
+  companyId,
+  from,
+  to,
+  status,
+}) => {
+  try {
+    const response = await axios.get(`/departmenthead/getusersleaves`, {
+      params: {
+        companyId,
+        from,
+        to,
+        status,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error?.response?.data?.message || error.message || "Failed to get leaves"
+    );
+  }
+};

@@ -188,8 +188,9 @@ export const applyLeave = async ({ from, to, reason, type }) => {
     });
     return response.data;
   } catch (error) {
+    console.log(error);
     throw new Error(
-      error?.response?.data?.message || error.message || "Failed to apply leave"
+      error?.response?.data || error.message || "Failed to apply leave"
     );
   }
 };

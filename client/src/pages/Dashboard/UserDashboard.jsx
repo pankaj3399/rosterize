@@ -15,7 +15,7 @@ const UserDashboard = () => {
 
   return (
     <div className="p-6 bg-white shadow-md rounded-md">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="p-4 bg-gray-100 border-l-4 border-yellow-500 text-center">
           <p className="text-4xl text-yellow-600">{data.totalHoursWorked}</p>
           <p className="text-gray-700">Number of Hours Worked This Week</p>
@@ -27,6 +27,10 @@ const UserDashboard = () => {
         <div className="p-4 bg-gray-100 border-l-4 border-red-500 text-center">
           <p className="text-4xl text-red-600">{data.annualLeaves}</p>
           <p className="text-gray-700">Balance of Annual Leaves</p>
+        </div>
+        <div className="p-4 bg-gray-100 border-l-4 border-yellow-500 text-center">
+          <p className="text-4xl text-yellow-600">{data.medicalLeaves}</p>
+          <p className="text-gray-700">Balance of Medical Leaves</p>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
