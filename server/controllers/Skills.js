@@ -3,8 +3,8 @@ const Skill = require("../models/Skills");
 module.exports = {
   create: async (req, res) => {
     try {
-      const { name } = req.body;
-      const skill = new Skill({ name });
+      const { name, company } = req.body;
+      const skill = new Skill({ name, company });
       await skill.save();
       res.status(201).json({ skill });
     } catch (error) {
@@ -13,9 +13,13 @@ module.exports = {
   },
   list: async (req, res) => {
     try {
-      // const roles = await Role.find();
-      // console.log("params",req.params.company_id);
-      const skills = await Skill.find();
+      const { company } = req.query;
+
+      if (!company) {
+        return res.status(400).json({ message: "Company ID is required" });
+      }
+
+      const skills = await Skill.find({ company });
 
       res.json(skills);
     } catch (error) {

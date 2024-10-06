@@ -5,6 +5,10 @@ const skillSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a name for this role."],
   },
+  company: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+  },
   createdAt: {
     type: Date,
     default: Date.now,

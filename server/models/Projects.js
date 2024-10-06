@@ -28,7 +28,7 @@ const projectSchema = new mongoose.Schema({
     ref: "Skill",
   },
   employee: {
-    type: String,
+    type: Number,
     required: [true, "Please provide a no of employee for this project."],
   },
   startTime: {

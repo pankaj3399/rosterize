@@ -51,16 +51,13 @@ module.exports = {
         role,
         primarySkill,
         secondarySkill,
-        leaveEntitlement,
         departmentHead,
       } = req.body;
-      // console.log(req.body);
       if (
         !firstName ||
         !email ||
         !companyRole ||
         !department ||
-        !leaveEntitlement ||
         !primarySkill ||
         !secondarySkill
       ) {
@@ -83,13 +80,13 @@ module.exports = {
         email,
         password: hashedPassword,
         balanceOfAnnualLeaves: 16,
+        balanceOfMedicalLeaves: 12,
         role,
         companyRole,
         department,
         phoneNo,
         company: req.user.company,
         status: "active",
-        leaveEntitlement,
         primarySkill,
         secondarySkill,
         departmentHead,
@@ -494,43 +491,90 @@ module.exports = {
   applyLeave: async (req, res) => {
     try {
       const { from, to, reason, type } = req.body;
+
       if (!from || !to || !reason) {
         return res.status(400).send("All fields are required");
       }
+
+      const startDate = new Date(from);
+      const endDate = new Date(to);
+
+      // Initialize an array to hold the valid leave dates
+      let validDates = [];
+
+      // Iterate through the date range
+      for (
+        let date = startDate;
+        date <= endDate;
+        date.setDate(date.getDate() + 1)
+      ) {
+        // Check if the day is not Saturday (6) or Sunday (0)
+        if (date.getDay() !== 6 && date.getDay() !== 0) {
+          validDates.push(new Date(date));
+        }
+      }
+
+      // If no valid dates are found, return an error
+      if (validDates.length === 0) {
+        return res
+          .status(400)
+          .send("Leave cannot be applied for weekends (Saturday and Sunday)");
+      }
+
       const user = req.user.id;
       const company = req.user.company;
       const department = req.user.department;
       const departmentHead = req.user.departmentHead;
 
-      const numberOfDays = Math.ceil(
-        (new Date(to) - new Date(from)) / (1000 * 60 * 60 * 24)
-      );
-      // check if the user has this much leave balance
+      // Calculate the number of valid leave days
+      const numberOfDays = validDates.length;
 
-      const userData = User.findById(user);
+      const userData = await User.findById(user);
+
+      // Check if the user has sufficient leave balance
       if (userData.balanceOfAnnualLeaves < numberOfDays) {
-        return res.send({ error: "Insufficient leave balance" });
+        return res.status(400).send({ error: "Insufficient leave balance" });
       }
 
-      const newLeave = new Leave({
+      // Check if leave already exists for the user on the requested dates
+      const existingLeaves = await Leave.find({
         user,
-        departmentHead,
-        company,
-        department,
-        leaveType: type,
-        startDate: from,
-        endDate: to,
-        status: "pending",
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        startDate: { $in: validDates },
+        endDate: { $in: validDates },
+        status: { $ne: "rejected" }, // Optional: Exclude rejected leaves
       });
 
-      await newLeave.save();
-      res.send("Leave applied successfully");
+      if (existingLeaves.length > 0) {
+        return res
+          .status(400)
+          .send("Leave already exists for the selected dates");
+      }
+      // Create a leave request for each valid date
+      for (let date of validDates) {
+        const newLeave = new Leave({
+          user,
+          departmentHead,
+          company,
+          department,
+          leaveType: type,
+          startDate: date,
+          endDate: date,
+          status: "pending",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await newLeave.save();
+      }
+
+      res.send(
+        "Leave applied successfully for the following dates: " +
+          validDates.map((date) => date.toDateString()).join(", ")
+      );
     } catch (error) {
       return res.status(500).send(error.message || "Error applying for leave");
     }
   },
+
   getLeaves: async (req, res) => {
     try {
       const user = req.user.id;

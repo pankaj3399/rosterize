@@ -48,15 +48,21 @@ module.exports = {
 
       // reduce the leave balance from the user account
 
-      if (status === "approved" && leave.leaveType === "annual") {
+      if (status === "approved") {
         const user = await User.findById(leave.user);
-        const leaveBalance = user.balanceOfAnnualLeaves;
-        // number of days the user is on leave
         const startDate = new Date(leave.startDate);
         const endDate = new Date(leave.endDate);
         const diffTime = Math.abs(endDate - startDate);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        user.balanceOfAnnualLeaves = leaveBalance - diffDays;
+
+        if (leave.leaveType === "annual") {
+          const leaveBalance = user.balanceOfAnnualLeaves;
+          user.balanceOfAnnualLeaves = leaveBalance - diffDays;
+        } else {
+          const medicalLeaveBalance = user.balanceOfMedicalLeaves;
+          user.balanceOfMedicalLeaves = medicalLeaveBalance - diffDays;
+        }
+
         await user.save();
       }
 
@@ -85,6 +91,7 @@ module.exports = {
 
       const clockInOut = await ClockInOut.find(findCondition)
         .populate("user", "name email")
+        .populate("project", "projectName")
         .populate("company", "name");
 
       return res.status(200).json(clockInOut);
@@ -137,6 +144,12 @@ module.exports = {
         assigned: true,
       });
 
+      // Fetch project details
+      const project = await Project.findById(project_id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found." });
+      }
+
       if (existingSchedule) {
         existingSchedule.clockIn = clockInUTC;
         existingSchedule.clockOut = clockOutUTC;
@@ -166,7 +179,7 @@ module.exports = {
 
       const notification = new Notification({
         user,
-        message: `You have been scheduled to work on the project ${project.name} on ${date} from ${clockInFormatted} to ${clockOutFormatted}.`,
+        message: `You have been scheduled to work on the new project ${project.name} on ${date} from ${clockInFormatted} to ${clockOutFormatted}.`,
         company,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -356,6 +369,79 @@ module.exports = {
       res.json(projects);
     } catch (error) {
       res.status(500).json({ message: error.message });
+    }
+  },
+  getAllUsersLeaves: async function (req, res) {
+    try {
+      const { from, to, status } = req.query;
+      const departmentId = req.department;
+      const findCondition = {
+        department: departmentId,
+      };
+
+      if (from && to) {
+        findCondition.startDate = { $gte: new Date(from), $lte: new Date(to) };
+      }
+
+      if (status) {
+        findCondition.status = status;
+      }
+
+      const leaves = await Leave.find(findCondition)
+        .populate("user", "name email")
+        .populate("department", "name")
+        .populate("departmentHead")
+        .populate("company", "name");
+
+      if (leaves.length > 0) {
+        return res.status(200).json(leaves);
+      }
+
+      return res
+        .status(404)
+        .json({ message: "No leaves found for the specified criteria." });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  },
+  getAllUsersCompanyLeaves: async function (req, res) {
+    try {
+      const { from, to, status, companyId } = req.query;
+      const company_Id = req.company;
+      const findCondition = {
+        company: company_Id,
+      };
+
+      // Date range condition
+      if (from && to) {
+        findCondition.startDate = { $gte: new Date(from), $lte: new Date(to) };
+      }
+
+      // Status condition
+      if (status) {
+        findCondition.status = status;
+      }
+
+      // Filter by companyId if provided
+      if (companyId) {
+        findCondition.company = companyId;
+      }
+
+      const leaves = await Leave.find(findCondition)
+        .populate("user", "name email")
+        .populate("department", "name")
+        .populate("departmentHead")
+        .populate("company", "name");
+
+      if (leaves.length > 0) {
+        return res.status(200).json(leaves);
+      }
+
+      return res
+        .status(404)
+        .json({ message: "No leaves found for the specified criteria." });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
     }
   },
 };

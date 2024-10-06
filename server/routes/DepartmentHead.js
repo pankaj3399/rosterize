@@ -10,6 +10,8 @@ const {
   listProject,
   removeProject,
   listCompanyProject,
+  getAllUsersLeaves,
+  getAllUsersCompanyLeaves,
 } = require("../controllers/DepartmentHead");
 
 router.get("/listDepartmentHeadProjects", listProject);
@@ -20,5 +22,7 @@ router.post("/leave/status/:id", changeLeaveStatus);
 router.get("/schedule", schedule);
 router.post("/schedule", addSchedule);
 router.get("/downloadschedule", downloadSchedule);
+router.get("/getleaves", getAllUsersLeaves);
+router.get("/getusersleaves", getAllUsersCompanyLeaves);
 
 module.exports = router;

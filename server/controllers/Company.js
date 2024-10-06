@@ -1,6 +1,7 @@
 const Company = require("../models/Company");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const sendMail = require("../helpers/Mail/sendMail");
 
 module.exports = {
   getCompany: async (req, res) => {
@@ -168,9 +169,27 @@ module.exports = {
         { status },
         { new: true }
       );
+
+      const user = await User.findOne({ company: company_id });
+
       if (!updatedCompany) {
         return res.status(500).send("Error updating company status");
       }
+
+      const email = user?.email;
+      const subject =
+        status === "approved" ? "Company Approved" : "Company Rejected";
+      const message =
+        status === "approved"
+          ? `Dear ${updatedCompany.name}, your company has been approved.`
+          : `Dear ${updatedCompany.name}, unfortunately, your company has been rejected.`;
+      // Send email
+      const isSendMail = await sendMail(email, subject, message);
+      console.log(isSendMail);
+
+      if (isSendMail?.error)
+        throw new Error(isSendMail.message || "Error sending email");
+
       return res.send(updatedCompany);
     } catch (error) {
       res.status(500).send(error.message || "Error updating company status");

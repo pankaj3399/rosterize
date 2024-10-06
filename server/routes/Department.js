@@ -1,10 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
-const { create, list, remove } = require('../controllers/Department');
+const { create, list, remove } = require("../controllers/Department");
 
-router.post('/', create);
-router.get('/:company_id', list);
-router.delete('/:department_id', remove);
+router.post("/", create);
+router.get("/:company_id", list);
+router.delete("/:department_id", remove);
 
 module.exports = router;

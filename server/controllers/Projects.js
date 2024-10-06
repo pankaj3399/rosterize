@@ -2,6 +2,7 @@ const Project = require("../models/Projects");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const ClockInOut = require("../models/ClockInOut");
+const { DateTime } = require("luxon");
 
 module.exports = {
   create: async (req, res) => {
@@ -17,6 +18,7 @@ module.exports = {
         startTime,
         endTime,
         img,
+        companyId,
       } = req.body;
 
       const project = new Project({
@@ -31,35 +33,37 @@ module.exports = {
         endTime,
         img,
       });
+      await project.save();
 
       const availableUsers = await User.find({
         primarySkill: primarySkill,
         role: "user",
+        company: companyId,
         $or: [{ project: null }, { project: { $exists: false } }],
       }).limit(employee);
 
-      // Notify if no employees are available for the project
       if (availableUsers.length === 0) {
-        // Create a notification about no available employees
         const noEmployeeNotification = new Notification({
           user: departmentHead,
           message: `No employees with the required primary skill (${primarySkill}) are available for the project: ${projectName}`,
-          company: departmentHead, // Assuming departmentHead represents the company or person to notify
+          company: departmentHead,
         });
         await noEmployeeNotification.save();
-        await project.save();
 
-        return res.status(404).json({
-          message: `No employees with the primary skill are available for the project: ${projectName}`,
+        return res.status(201).json({
+          message: `Project created but No employees with the primary skill are available for the project: ${projectName}`,
+          project,
         });
       }
 
       if (availableUsers.length < employee) {
-        return res.status(404).json({
-          message: `Only ${availableUsers.length} user(s) available, but ${employee} were required`,
+        return res.status(201).json({
+          message: `Project created but only ${availableUsers.length} user(s) available, but ${employee} were required`,
+          project,
         });
       }
 
+      const clockInOutBulkData = [];
       const userUpdates = availableUsers.map(async (user) => {
         user.project = project._id;
         await user.save();
@@ -71,62 +75,63 @@ module.exports = {
         });
         await notification.save();
 
-        const startDate = new Date(startTime);
-        const endDate = new Date(endTime);
-        const startClockInTime = new Date(startTime);
-        const endClockOutTime = new Date(endTime);
+        const startDate = DateTime.fromISO(startTime, { zone: "Asia/Kolkata" });
+        const endDate = DateTime.fromISO(endTime, { zone: "Asia/Kolkata" });
 
-        let currentDate = new Date(startDate);
+        let currentDate = startDate;
 
         while (currentDate <= endDate) {
-          // Get the day of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-          const dayOfWeek = currentDate.getUTCDay();
+          const dayOfWeek = currentDate.weekday;
 
-          // Only process weekdays (Monday to Friday)
-          if (dayOfWeek !== 6 && dayOfWeek !== 0) {
-            const clockIn = new Date(currentDate);
-            clockIn.setUTCHours(startClockInTime.getUTCHours());
-            clockIn.setUTCMinutes(startClockInTime.getUTCMinutes());
-            clockIn.setUTCSeconds(0);
+          if (dayOfWeek < 6) {
+            const clockIn = currentDate.set({
+              hour: startDate.hour + 5, // Add 5 hours
+              minute: startDate.minute + 30, // Add 30 minutes
+            });
+            const clockOut = currentDate.set({
+              hour: endDate.hour + 5,
+              minute: endDate.minute + 30,
+            });
 
-            const clockOut = new Date(currentDate);
-            clockOut.setUTCHours(endClockOutTime.getUTCHours());
-            clockOut.setUTCMinutes(endClockOutTime.getUTCMinutes());
-            clockOut.setUTCSeconds(0);
+            const clockInUTC = clockIn.toUTC().toISO();
+            const clockOutUTC = clockOut.toUTC().toISO();
 
+            // Check if a ClockInOut already exists for the current day
             const existingClockInOut = await ClockInOut.findOne({
               user: user._id,
-              createdAt: { $gte: currentDate },
+              createdAt: { $gte: currentDate.toJSDate() },
               assigned: true,
             });
 
             if (existingClockInOut) {
-              existingClockInOut.clockIn = clockIn;
-              existingClockInOut.clockOut = clockOut;
+              existingClockInOut.clockIn = clockInUTC;
+              existingClockInOut.clockOut = clockOutUTC;
               existingClockInOut.project = project._id;
               await existingClockInOut.save();
             } else {
-              const newClockInOut = new ClockInOut({
+              clockInOutBulkData.push({
                 user: user._id,
                 company: user.company,
-                clockIn: clockIn,
-                clockOut: clockOut,
+                clockIn: clockInUTC,
+                clockOut: clockOutUTC,
                 project: project._id,
                 assigned: true,
               });
-              await newClockInOut.save();
             }
           }
 
-          // Move to the next day
-          currentDate.setDate(currentDate.getDate() + 1);
+          currentDate = currentDate.plus({ days: 1 });
         }
       });
 
       await Promise.all(userUpdates);
 
+      if (clockInOutBulkData.length > 0) {
+        await ClockInOut.insertMany(clockInOutBulkData);
+      }
+
       res.status(201).json({
-        message: `Project created and assigned to ${availableUsers.length} user(s)`,
+        message: "Project created and assigned to user",
         project,
         assignedUsers: availableUsers.map((user) => user.email),
       });
@@ -136,7 +141,7 @@ module.exports = {
   },
   list: async (req, res) => {
     try {
-      const { projectName } = req.query;
+      const { projectName, company } = req.query;
       const findCondition = {};
       if (projectName && projectName != "") {
         findCondition.projectName = {
@@ -144,6 +149,7 @@ module.exports = {
           $options: "i",
         };
       }
+
       const projects = await Project.find(findCondition)
         .populate("primarySkill")
         .populate("secondarySkill")
@@ -151,7 +157,14 @@ module.exports = {
         .populate("fourthSkill")
         .populate("departmentHead");
 
-      res.json(projects);
+      const filteredProjects = projects.filter((project) => {
+        return (
+          project.departmentHead &&
+          String(project.departmentHead.company) === company
+        );
+      });
+
+      res.json(filteredProjects);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

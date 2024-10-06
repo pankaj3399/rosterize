@@ -47,10 +47,6 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Department",
   },
-  leaveEntitlement: {
-    type: String,
-    // required: [true, "Please provide an Leave Entitlement for this user."],
-  },
   primarySkill: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Skill",
@@ -75,6 +71,10 @@ const userSchema = new mongoose.Schema({
   balanceOfAnnualLeaves: {
     type: Number,
     default: 16,
+  },
+  balanceOfMedicalLeaves: {
+    type: Number,
+    default: 12,
   },
   resetCode: {
     type: String,

@@ -5,6 +5,29 @@ const Review = require("../../models/Review");
 const ClockInOut = require("../../models/ClockInOut");
 const Status = require("../../models/Status");
 
+const resetLeaveBalances = async () => {
+  try {
+    const today = new Date();
+    const resetDate = new Date(today.getFullYear(), 0, 1);
+
+    if (
+      today.getDate() === resetDate.getDate() &&
+      today.getMonth() === resetDate.getMonth()
+    ) {
+      await User.updateMany(
+        {},
+        {
+          balanceOfAnnualLeaves: 16,
+          balanceOfMedicalLeaves: 12,
+        }
+      );
+      console.log("Leave balances have been reset for all users.");
+    }
+  } catch (error) {
+    console.error("Error resetting leave balances:", error.message);
+  }
+};
+
 module.exports = {
   superAdmin: async function () {
     try {
@@ -33,27 +56,29 @@ module.exports = {
           $in: ["user", "departmenthead"],
         },
       }).countDocuments();
-      // console.log('userCount', userCount);
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0)); // 00:00:00
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // 23:59:59
 
       // get count of all leaves in the company where current date is between the start and end date of leave or on the start date of leave or on the end date of leave
       const leaveCount = await Leave.find({
         company: companyId,
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
+        startDate: { $lte: endOfDay },
+        endDate: { $gte: startOfDay },
       }).countDocuments();
 
       const medicalLeaveCount = await Leave.find({
         company: companyId,
         leaveType: "medical",
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
+        startDate: { $lte: endOfDay },
+        endDate: { $gte: startOfDay },
       }).countDocuments();
 
       const annualLeaveCount = await Leave.find({
         company: companyId,
         leaveType: "annual",
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
+        startDate: { $lte: endOfDay },
+        endDate: { $gte: startOfDay },
       }).countDocuments();
 
       return {
@@ -67,10 +92,9 @@ module.exports = {
     }
   },
   departmentHead: async function (departmentId, companyId, user_id) {
-    const date = new Date();
-
-    const lte = new Date(date.setHours(0, 0, 0, 0));
-    const gte = new Date(date.setHours(23, 59, 59, 999));
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0)); // 00:00:00
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // 23:59:59
 
     const userCount = await User.find({
       company: companyId,
@@ -88,8 +112,8 @@ module.exports = {
       department: departmentId,
       departmentHead: user_id,
       status: "approved",
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay },
     })
       .populate({
         path: "user",
@@ -103,8 +127,8 @@ module.exports = {
       departmentHead: user_id,
       leaveType: "medical",
       status: "approved",
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay },
     })
       .populate({
         path: "user",
@@ -118,8 +142,8 @@ module.exports = {
       departmentHead: user_id,
       leaveType: "annual",
       status: "approved",
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay },
     })
       .populate({
         path: "user",
@@ -137,7 +161,7 @@ module.exports = {
 
     const statusOnline = await Status.find({
       user: { $in: userIds },
-      createdAt: { $gte: lte, $lte: gte },
+      createdAt: { $gte: startOfDay, $lte: endOfDay },
       status: "online",
     }).populate("user");
 
@@ -164,8 +188,8 @@ module.exports = {
     let leaveUsers = await Leave.find({
       company: companyId,
       departmentHead: user_id,
-      startDate: { $lte: new Date() },
-      endDate: { $gte: new Date() },
+      startDate: { $lte: endOfDay },
+      endDate: { $gte: startOfDay },
     }).populate({
       path: "user",
       match: { departmentHead: user_id },
@@ -189,10 +213,11 @@ module.exports = {
   },
   user: async function (userId, departmentId, companyId) {
     try {
-      const date = new Date();
+      await resetLeaveBalances();
 
-      const lte = new Date(date.setHours(0, 0, 0, 0));
-      const gte = new Date(date.setHours(23, 59, 59, 999));
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // 23:59:59
 
       const users = await User.find({
         company: companyId,
@@ -203,7 +228,7 @@ module.exports = {
 
       const statusOnline = await Status.find({
         user: { $in: userIds },
-        createdAt: { $gte: lte, $lte: gte },
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
         status: "online",
       }).populate("user");
 
@@ -220,8 +245,8 @@ module.exports = {
 
       let leaveUsers = await Leave.find({
         company: companyId,
-        startDate: { $lte: new Date() },
-        endDate: { $gte: new Date() },
+        startDate: { $lte: endOfDay },
+        endDate: { $gte: startOfDay },
       }).populate("user");
 
       // remove duplicates by user._id
@@ -277,6 +302,7 @@ module.exports = {
         totalHoursAssigned,
         totalHoursWorked,
         annualLeaves: user.balanceOfAnnualLeaves,
+        medicalLeaves: user.balanceOfMedicalLeaves,
         leaveUsers,
         statusOnline,
         statusOffline,
