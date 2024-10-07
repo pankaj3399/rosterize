@@ -5,29 +5,6 @@ const Review = require("../../models/Review");
 const ClockInOut = require("../../models/ClockInOut");
 const Status = require("../../models/Status");
 
-const resetLeaveBalances = async () => {
-  try {
-    const today = new Date();
-    const resetDate = new Date(today.getFullYear(), 0, 1);
-
-    if (
-      today.getDate() === resetDate.getDate() &&
-      today.getMonth() === resetDate.getMonth()
-    ) {
-      await User.updateMany(
-        {},
-        {
-          balanceOfAnnualLeaves: 16,
-          balanceOfMedicalLeaves: 12,
-        }
-      );
-      console.log("Leave balances have been reset for all users.");
-    }
-  } catch (error) {
-    console.error("Error resetting leave balances:", error.message);
-  }
-};
-
 module.exports = {
   superAdmin: async function () {
     try {
@@ -213,8 +190,6 @@ module.exports = {
   },
   user: async function (userId, departmentId, companyId) {
     try {
-      await resetLeaveBalances();
-
       const today = new Date();
       const startOfDay = new Date(today.setHours(0, 0, 0, 0));
       const endOfDay = new Date(today.setHours(23, 59, 59, 999)); // 23:59:59
@@ -294,15 +269,45 @@ module.exports = {
 
       //balance of Annual Leaves
 
+      // Calculate leave balances for the current year
+      const currentYear = new Date().getFullYear();
+
+      // Find the total number of annual leaves taken this year
+      const currentYearAnnual = await Leave.find({
+        user: userId,
+        leaveType: "annual",
+        status: "approved",
+        startDate: {
+          $gte: new Date(currentYear, 0, 1), // January 1st of current year
+          $lte: new Date(currentYear, 11, 31, 23, 59, 59), // December 31st of current year
+        },
+      }).countDocuments();
+
+      // Find the total number of medical leaves taken this year
+      const currentYearMedical = await Leave.find({
+        user: userId,
+        leaveType: "medical",
+        status: "approved",
+        startDate: {
+          $gte: new Date(currentYear, 0, 1),
+          $lte: new Date(currentYear, 11, 31, 23, 59, 59),
+        },
+      }).countDocuments();
+
       const user = await User.findById({
         _id: userId,
       });
 
+      const annualLeavesBalance =
+        user.balanceOfAnnualLeaves - currentYearAnnual;
+      const medicalLeavesBalance =
+        user.balanceOfMedicalLeaves - currentYearMedical;
+
       return {
         totalHoursAssigned,
         totalHoursWorked,
-        annualLeaves: user.balanceOfAnnualLeaves,
-        medicalLeaves: user.balanceOfMedicalLeaves,
+        annualLeaves: annualLeavesBalance,
+        medicalLeaves: medicalLeavesBalance,
         leaveUsers,
         statusOnline,
         statusOffline,

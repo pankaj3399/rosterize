@@ -46,25 +46,26 @@ module.exports = {
       });
       await notification.save();
 
-      // reduce the leave balance from the user account
+      // // reduce the leave balance from the user account
 
-      if (status === "approved") {
-        const user = await User.findById(leave.user);
-        const startDate = new Date(leave.startDate);
-        const endDate = new Date(leave.endDate);
-        const diffTime = Math.abs(endDate - startDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      // if (status === "approved") {
+      //   const user = await User.findById(leave.user);
+      //   const startDate = new Date(leave.startDate);
+      //   const endDate = new Date(leave.endDate);
+      //   const diffTime = Math.abs(endDate - startDate);
+      //   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-        if (leave.leaveType === "annual") {
-          const leaveBalance = user.balanceOfAnnualLeaves;
-          user.balanceOfAnnualLeaves = leaveBalance - diffDays;
-        } else {
-          const medicalLeaveBalance = user.balanceOfMedicalLeaves;
-          user.balanceOfMedicalLeaves = medicalLeaveBalance - diffDays;
-        }
+      //   if (leave.leaveType === "annual") {
+      //     user.leavesTaken += diffDays;
+      //     // const leaveBalance = user.balanceOfAnnualLeaves;
+      //     // user.balanceOfAnnualLeaves = leaveBalance - diffDays;
+      //   } else {
+      //     const medicalLeaveBalance = user.balanceOfMedicalLeaves;
+      //     user.balanceOfMedicalLeaves = medicalLeaveBalance - diffDays;
+      //   }
 
-        await user.save();
-      }
+      //   await user.save();
+      // }
 
       return res.status(200).json(leave);
     } catch (error) {

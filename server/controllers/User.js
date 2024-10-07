@@ -52,12 +52,14 @@ module.exports = {
         primarySkill,
         secondarySkill,
         departmentHead,
+        leaveEntitlement,
       } = req.body;
       if (
         !firstName ||
         !email ||
         !companyRole ||
         !department ||
+        !leaveEntitlement ||
         !primarySkill ||
         !secondarySkill
       ) {
@@ -79,7 +81,7 @@ module.exports = {
         lastName,
         email,
         password: hashedPassword,
-        balanceOfAnnualLeaves: 16,
+        balanceOfAnnualLeaves: leaveEntitlement,
         balanceOfMedicalLeaves: 12,
         role,
         companyRole,
@@ -499,22 +501,18 @@ module.exports = {
       const startDate = new Date(from);
       const endDate = new Date(to);
 
-      // Initialize an array to hold the valid leave dates
       let validDates = [];
 
-      // Iterate through the date range
       for (
         let date = startDate;
         date <= endDate;
         date.setDate(date.getDate() + 1)
       ) {
-        // Check if the day is not Saturday (6) or Sunday (0)
         if (date.getDay() !== 6 && date.getDay() !== 0) {
           validDates.push(new Date(date));
         }
       }
 
-      // If no valid dates are found, return an error
       if (validDates.length === 0) {
         return res
           .status(400)
@@ -525,23 +523,52 @@ module.exports = {
       const company = req.user.company;
       const department = req.user.department;
       const departmentHead = req.user.departmentHead;
-
-      // Calculate the number of valid leave days
       const numberOfDays = validDates.length;
 
       const userData = await User.findById(user);
 
-      // Check if the user has sufficient leave balance
-      if (userData.balanceOfAnnualLeaves < numberOfDays) {
-        return res.status(400).send({ error: "Insufficient leave balance" });
+      const currentYear = new Date().getFullYear();
+
+      let currentYearAnnual = 0;
+      let currentYearMedical = 0;
+
+      if (type === "annual") {
+        currentYearAnnual = await Leave.find({
+          user,
+          leaveType: "annual",
+          startDate: {
+            $gte: new Date(currentYear, 0, 1),
+            $lte: new Date(currentYear, 11, 31, 23, 59, 59),
+          },
+        }).countDocuments();
+      } else if (type === "medical") {
+        currentYearMedical = await Leave.find({
+          user,
+          leaveType: "medical",
+          startDate: {
+            $gte: new Date(currentYear, 0, 1),
+            $lte: new Date(currentYear, 11, 31, 23, 59, 59),
+          },
+        }).countDocuments();
       }
 
-      // Check if leave already exists for the user on the requested dates
+      let remainingLeaves;
+
+      if (type === "annual") {
+        remainingLeaves = userData.balanceOfAnnualLeaves - currentYearAnnual;
+      } else if (type === "medical") {
+        remainingLeaves = userData.balanceOfMedicalLeaves - currentYearMedical;
+      }
+
+      if (remainingLeaves < numberOfDays) {
+        return res.status(400).send({ message: "Insufficient leave balance" });
+      }
+
       const existingLeaves = await Leave.find({
         user,
         startDate: { $in: validDates },
         endDate: { $in: validDates },
-        status: { $ne: "rejected" }, // Optional: Exclude rejected leaves
+        status: { $ne: "rejected" },
       });
 
       if (existingLeaves.length > 0) {
@@ -549,7 +576,6 @@ module.exports = {
           .status(400)
           .send("Leave already exists for the selected dates");
       }
-      // Create a leave request for each valid date
       for (let date of validDates) {
         const newLeave = new Leave({
           user,
