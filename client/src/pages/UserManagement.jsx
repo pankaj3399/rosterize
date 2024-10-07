@@ -108,6 +108,7 @@ const UserManagement = () => {
     role: "",
     primarySkill: "",
     secondarySkill: "",
+    leaveEntitlement: "",
     departmentHead: "",
   });
 
@@ -133,7 +134,8 @@ const UserManagement = () => {
       !newUser.phoneNumber ||
       !newUser.role ||
       !newUser.primarySkill ||
-      !newUser.secondarySkill
+      !newUser.secondarySkill ||
+      !newUser.leaveEntitlement
     ) {
       return alert("All fields are required");
     }
@@ -149,6 +151,7 @@ const UserManagement = () => {
       companyRole: "",
       primarySkill: "",
       secondarySkill: "",
+      leaveEntitlement: "",
       departmentHead: "",
     });
   };
@@ -276,6 +279,19 @@ const UserManagement = () => {
               </select>
             </>
           )}
+
+          <label className="block text-sm font-medium mb-1 mt-4">
+            Leave Entitlement: (Key in Number Only)
+          </label>
+          <input
+            className="border p-2 rounded w-full"
+            value={newUser.leaveEntitlement}
+            onChange={(e) =>
+              setNewUser({ ...newUser, leaveEntitlement: e.target.value })
+            }
+            required
+            type="number"
+          />
         </div>
 
         <div>
@@ -428,6 +444,9 @@ const UserManagement = () => {
                 <p className="text-sm">
                   <strong>Secondary Skill:</strong> {user?.secondarySkill?.name}
                 </p>
+                {/* <p className="text-sm">
+                  <strong>Leave Entitlement :</strong> {user?.leaveEntitlement}
+                </p> */}
               </div>
               {
                 // user.role == 'user' &&
